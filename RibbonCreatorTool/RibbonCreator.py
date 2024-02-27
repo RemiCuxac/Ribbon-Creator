@@ -8,12 +8,7 @@ from shiboken2 import wrapInstance
 
 from maya import OpenMayaUI
 
-# In case that the script is executed through mayaPy or Script Editor:
-# try:
 filePath = __file__
-# except NameError:
-#     filePath = ("/Users/remicuxac/Desktop/CODE/Python/Project Folders/PycharmProject1/"
-#                 "Maya/RibbonCreatorTool/RibbonCreator.py")
 
 try:
     import RibbonCreatorTool.RibbonCreatorOperations as RibbonGenOp
@@ -163,6 +158,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
                   "Hover checkbox of the interface to get more info about available features.\n\n" \
                   "If you find any bug, please message me at: contact[at]remicuxac.com\n" \
                   "Author: Rémi CUXAC\n"
+                  "https://github.com/RemiCuxac/Ribbon-Creator\n"
         self.show_popup(message, True)
 
     def send_message(self, pMessage) -> None:
