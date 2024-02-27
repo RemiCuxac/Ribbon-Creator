@@ -157,7 +157,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
         message = "This tool is provided for free, and helps to build limbs, tentacles, tails...\n" \
                   "Hover checkbox of the interface to get more info about available features.\n\n" \
                   "If you find any bug, please message me at: contact[at]remicuxac.com\n" \
-                  "Author: Rémi CUXAC\n"
+                  "Author: Rémi CUXAC\n" \
                   "https://github.com/RemiCuxac/Ribbon-Creator\n"
         self.show_popup(message, True)
 
