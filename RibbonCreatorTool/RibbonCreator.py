@@ -52,7 +52,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
         super(RibbonInterface, self).__init__(parent)
         self.setParent(maya_window)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(QtCore.Qt.Window)
         self.setWindowTitle(ToolName)
         self.setObjectName(ToolName)
         self.setContentsMargins(0, 0, 0, 0)
