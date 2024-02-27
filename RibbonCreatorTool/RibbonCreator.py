@@ -79,49 +79,8 @@ class RibbonInterface(QtWidgets.QMainWindow):
 
         self.rop = RibbonGenOp.RibbonOperations
         self.rop.init_params()
-        self.ui.qle_name.setText(self.rop.generate_new_name(self.ribbon_name))
-        self.ui.qrb_forward_x.setChecked(True)
-        self.ui.qrb_up_y.setChecked(True)
-        # self.ui.qgb_name.setStyle(QtWidgets.QStyleFactory.create("plastique"))
-        # self.ui.qgb_forward.setStyle(QtWidgets.QStyleFactory.create("plastique"))
-        # self.ui.qgb_up.setStyle(QtWidgets.QStyleFactory.create("plastique"))
-        self.ui.qtw_tabs.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
-        self.ui.setStyleSheet("""
-                    QGroupBox {
-                        /*font-weight:bold;*/
-                        font-size:12px;
-                        color:#EEEEEE;
-                    }
-                    QTabBar::tab {
-                        min-width: 100px;
-                        min-height: 10px;
-                        border-radius: 0px;
-                        padding: 8px;
-                        background-color: #373737;
-                        color:#EEEEEE;
-                    }
-                    QTabBar::tab:selected {
-                        background-color: #5d5d5d;
-                    }
-                    QTabBar::tab:hover {
-                        background-color: #707070;
-                    }
-                    QTabWidget::tab-bar {
-                        alignment: center;
-                    }
-                    QTabWidget {
-                        /*font-weight:bold;*/
-                        font-size:12px;
-
-                    }
-                    QTabWidget::pane { 
-                        background-color: transparent; 
-                    }
-                    QPushButton {
-                        min-height:20px;
-                    }
-                    """)
+        self.init_interface()
 
         # Install the event filter to detect mouse enter events
         self.installEventFilter(self)
@@ -152,6 +111,51 @@ class RibbonInterface(QtWidgets.QMainWindow):
                     self.rop.init_params()
                 self.check_ribbon_name()
         return super().eventFilter(source, event)
+
+    def init_interface(self):
+        self.ui.qle_name.setText(self.rop.generate_new_name(self.ribbon_name))
+        self.ui.qrb_forward_x.setChecked(True)
+        self.ui.qrb_up_y.setChecked(True)
+        # self.ui.qgb_name.setStyle(QtWidgets.QStyleFactory.create("plastique"))
+        # self.ui.qgb_forward.setStyle(QtWidgets.QStyleFactory.create("plastique"))
+        # self.ui.qgb_up.setStyle(QtWidgets.QStyleFactory.create("plastique"))
+        self.ui.qtw_tabs.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        self.ui.setStyleSheet("""
+                           QGroupBox {
+                               /*font-weight:bold;*/
+                               font-size:12px;
+                               color:#EEEEEE;
+                           }
+                           QTabBar::tab {
+                               min-width: 100px;
+                               min-height: 10px;
+                               border-radius: 0px;
+                               padding: 8px;
+                               background-color: #373737;
+                               color:#EEEEEE;
+                           }
+                           QTabBar::tab:selected {
+                               background-color: #5d5d5d;
+                           }
+                           QTabBar::tab:hover {
+                               background-color: #707070;
+                           }
+                           QTabWidget::tab-bar {
+                               alignment: center;
+                           }
+                           QTabWidget {
+                               /*font-weight:bold;*/
+                               font-size:12px;
+
+                           }
+                           QTabWidget::pane { 
+                               background-color: transparent; 
+                           }
+                           QPushButton {
+                               min-height:20px;
+                           }
+                           """)
 
     def help(self) -> None:
         message = "This tool is provided for free, and helps to build limbs, tentacles, tails...\n" \
