@@ -8,7 +8,7 @@ The ribbon is built to be :
 
 Feel free to suggest changes and improvements !
 
-![image](https://github.com/RemiCuxac/Ribbon-Creator/assets/7034375/0524cc6e-27cd-4f02-b584-734dc3b88549)
+![image](https://github.com/RemiCuxac/Ribbon-Creator/assets/7034375/78e907ae-1177-46e0-a9f8-b618b2c8baff)
 
 ## Installation:
 1. Download the folder RibbonGeneratorTool and put it anywhere on your computer.
