@@ -13,7 +13,7 @@ Feel free to suggest changes and improvements !
 ## Installation:
 1. Download the folder RibbonCreatorTool and put it anywhere on your computer.
 2. Drag and drop the file DragAndDropToViewport.py into the viewport of Maya and a button will be added in the active shelf.
-All the files will be copied to scripts folder : <DocumentsFolder>/maya/<version>/scripts/RibbonCreatorTool
+All the files will be copied to scripts folder : Documents/maya/<version<version>>/scripts/RibbonCreatorTool
 
 ### Compatibility:
 Maya 2022 and newer versions.
