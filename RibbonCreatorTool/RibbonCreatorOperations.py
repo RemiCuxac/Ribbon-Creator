@@ -612,11 +612,11 @@ class RibbonOperations:
 
     @classmethod
     def update_main_iso(cls, pMainJointCount: int, pRollJointCount: int,
-                        pCreateControlJoints: bool, pCreateChain: bool, pSkinChain: bool) -> None:
+                        pCreateControlJoints: bool, pCreateChain: bool, pSkinChain: bool, pPinch: bool) -> None:
 
         cls.distances = cls.generate_distance_list(cls.selection, cls.length, pMainJointCount)
         cls.mainIsoPos = cls.generate_iso_pos_main(cls.distances)
-        cls.mainKnotNode = cls.add_knots(cls.ribbon, cls.mainIsoPos, KnotType.main, pCreateChain)
+        cls.mainKnotNode = cls.add_knots(cls.ribbon, cls.mainIsoPos, KnotType.main, pPinch)
         cls.update_follicles(cls.mainIsoPos, cls.mainKnotNode, KnotType.main)
         cls.update_roll_iso(pRollJointCount, pCreateChain, pCreateControlJoints, pSkinChain)
 
@@ -703,8 +703,9 @@ class RibbonOperations:
                       pMainJointCount: int,
                       pRollJointCount: int,
                       pCreateControlJoints: bool,
-                      pSkinChain: bool,
                       pCreateChain: bool,
+                      pSkinChain: bool,
+                      pPinch: bool,
                       pShowPopup: bool = True) -> str:
         cls.init_params()
         cls.selection = cls.get_selection("joint", True)
@@ -717,19 +718,19 @@ class RibbonOperations:
         cls.grpLoc = cmds.group(name=f"{cls.ribbon}_grp_loc", empty=True, parent=cls.grpRibbon)
         cls.grpJnt = cmds.group(name=f"{cls.ribbon}_grp_jnt", empty=True, parent=cls.grpRibbon)
         cls.update_main_iso(pMainJointCount, pRollJointCount, pCreateControlJoints,
-                            pCreateChain, pSkinChain)
+                            pCreateChain, pSkinChain, pPinch)
         message = cls.end_step(pShowPopup, True)
         return message
 
     @classmethod
     def build_ribbon(cls, *args, **kwargs) -> str:
         if cls.previs_step is False:
-            cls.previs_ribbon(*args, pShowPopup=False)
+            cls.previs_ribbon(*args, pPinch=kwargs["pPinch"], pShowPopup=False)
 
         # build deformers
         for param, value in kwargs.items():
             if param.lower() in ["sine", "twist", "flare", "bend"] and value:
-                cls.create_deformer(cls.mainIsoPos, cls.rollIsoPos, param, kwargs["pCreateChain"])
+                cls.create_deformer(cls.mainIsoPos, cls.rollIsoPos, param, kwargs["pPinch"])
 
         message = cls.end_step(True, False)
         return message

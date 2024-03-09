@@ -8,7 +8,12 @@ from shiboken2 import wrapInstance
 
 from maya import OpenMayaUI
 
-filePath = __file__
+# In case that the script is executed through mayaPy or Script Editor:
+try:
+    filePath = __file__
+except NameError:
+    filePath = ("/Users/remicuxac/Desktop/CODE/Python/Project Folders/PycharmProject1/"
+                "Maya/RibbonCreatorTool/RibbonCreator.py")
 
 try:
     import RibbonCreatorTool.RibbonCreatorOperations as RibbonGenOp
@@ -252,6 +257,10 @@ class RibbonInterface(QtWidgets.QMainWindow):
         return self.ui.qcb_skin.isChecked()
 
     @property
+    def pinch(self) -> bool:
+        return self.ui.qcb_pinch.isChecked()
+
+    @property
     def history(self) -> bool:
         return self.ui.qcb_clean_history.isChecked()
 
@@ -272,6 +281,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
             self.ui.qpb_build.setEnabled(True)
 
     def update_layout_align(self) -> None:
+        self.ui.qcb_pinch.setEnabled(not self.align)
         self.ui.qs_main_joints.setEnabled(not self.align)
         self.ui.qsb_main_joints.setReadOnly(self.align)
         self.ui.qs_length.setEnabled(not self.align)
@@ -302,6 +312,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
         self.rop.end_step(False, True)
 
     def update_layout_chain(self) -> None:
+        self.ui.qcb_pinch.setEnabled(self.skin and self.create_chain)
         self.ui.qcb_ik.setEnabled(self.create_chain and not self.align)
         self.ui.qcb_switch.setEnabled(self.create_chain and not self.align)
         self.ui.qcb_stretch.setEnabled(self.create_chain and not self.align)
@@ -310,6 +321,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
             self.rop.end_step(False, True)
 
     def update_layout_control_joints(self) -> None:
+        self.ui.qcb_pinch.setEnabled(self.control_joints and not self.align)
         self.ui.qcb_ik.setEnabled(self.create_chain and self.control_joints and not self.align)
         self.ui.qcb_switch.setEnabled(self.create_chain and self.control_joints and not self.align)
         self.ui.qcb_stretch.setEnabled(self.create_chain and self.control_joints and not self.align)
@@ -394,10 +406,12 @@ class RibbonInterface(QtWidgets.QMainWindow):
         self.ui.qcb_chain.toggled.connect(self.update_layout_chain)
 
         self.ui.qcb_control_joints.toggled.connect(self.update_layout_control_joints)
+        self.ui.qcb_pinch.toggled.connect(self.update_main_iso)
         self.ui.qcb_skin.toggled.connect(self.update_skin)
 
     def connect_tooltips(self) -> None:
         self.ui.qcb_align.setStatusTip("Select the chain from first joint to last joint, then check this button.")
+        self.ui.qcb_pinch.setStatusTip("This will snap isoparms of the ribbon to main joints.")
         self.ui.qcb_skin.setStatusTip("This will skin control joints to the ribbon")
         self.ui.qcb_chain.setStatusTip("This will make a leaf setup, so roll joints will be parented to main joints")
         self.ui.qcb_control_joints.setStatusTip("This will create control joints.")
@@ -426,7 +440,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
         if not self.rop.previs_step:
             message = self.rop.previs_ribbon(self.ribbon_name, self.forward_vector, self.up_vector, self.length,
                                              self.main_joint_count, self.roll_joint_count, self.control_joints,
-                                             self.skin, pCreateChain=self.create_chain)
+                                             self.create_chain, self.skin, self.pinch)
             self.show_popup(message)
         else:
             self.rop.delete_ribbon(self.ribbon_name)
@@ -436,7 +450,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
         ribbonName = self.ribbon_name
         message = self.rop.build_ribbon(ribbonName, self.forward_vector, self.up_vector, self.length,
                                         self.main_joint_count, self.roll_joint_count, self.control_joints,
-                                        self.skin, pCreateChain=self.create_chain, bend=self.create_bend,
+                                        self.create_chain, self.skin, pPinch=self.pinch, bend=self.create_bend,
                                         sine=self.create_sine, twist=self.create_twist, flare=self.create_flare)
         if self.history:
             self.rop.delete_history()
@@ -454,13 +468,14 @@ class RibbonInterface(QtWidgets.QMainWindow):
     def update_main_iso(self) -> None:
         if self.rop.previs_step and self.rop.check_ribbon():
             self.rop.update_main_iso(self.main_joint_count, self.roll_joint_count,
-                                     self.control_joints, self.create_chain, self.skin)
+                                     self.control_joints, self.create_chain, self.skin, self.pinch)
 
     def update_roll_iso(self) -> None:
         if self.rop.previs_step and self.rop.check_ribbon():
             self.rop.update_roll_iso(self.roll_joint_count, self.create_chain, self.control_joints, self.skin)
 
     def update_skin(self) -> None:
+        self.ui.qcb_pinch.setEnabled(self.skin and self.create_chain)
         if self.rop.previs_step and self.rop.check_ribbon():
             if self.skin:
                 self.rop.update_skin()
@@ -524,9 +539,4 @@ if __name__ == '__main__':
 
 # TODO: add a feature to use an existing ribbon. It will reactivate the switch instead of rebuild all the ribbon
 #  It will also update length, main joints and roll joints interface from the selected ribbon.
-#  It could be dependant of a checkbox or from two QLineEdit where I store the selected ribbon and the selected setup
-
-
-# TODO: add a feature to use an existing ribbon. It will reactivate the switch instead of rebuild all the ribbon
-#  It will also update lenght, main joints and roll joints interface from the selected ribbon.
 #  It could be dependant of a checkbox or from two QLineEdit where I store the selected ribbon and the selected setup
