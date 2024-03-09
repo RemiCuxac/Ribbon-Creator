@@ -9,11 +9,8 @@ from shiboken2 import wrapInstance
 from maya import OpenMayaUI
 
 # In case that the script is executed through mayaPy or Script Editor:
-try:
-    filePath = __file__
-except NameError:
-    filePath = ("/Users/remicuxac/Desktop/CODE/Python/Project Folders/PycharmProject1/"
-                "Maya/RibbonCreatorTool/RibbonCreator.py")
+
+filePath = __file__
 
 try:
     import RibbonCreatorTool.RibbonCreatorOperations as RibbonGenOp
