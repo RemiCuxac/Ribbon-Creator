@@ -13,6 +13,14 @@ class KnotType(Enum):
         return str(self.value)
 
 
+class MethodName(Enum):
+    posi = "pointOnSurfaceInfo"
+    uvPin = "uvPin"
+
+    def __str__(self):
+        return str(self.value)
+
+
 class RibbonOperations:
     selection: list = []  # selected joints
     align: bool = False
@@ -392,8 +400,8 @@ class RibbonOperations:
         return None
 
     @classmethod
-    def update_follicles(cls, pIsoPos: Tuple[float], pKnotNode: str,
-                         pType: KnotType) -> None:
+    def update_follicles(cls, pIsoPos: Tuple[float], pKnotNode: str, pType: KnotType,
+                         pMethod: MethodName = MethodName.uvPin) -> None:
         if pType == KnotType.main:
             pIsoPos = cls.generate_iso_pos_full(pIsoPos)
         typeName = str(pType).lower().split("knot")[0]
@@ -419,36 +427,58 @@ class RibbonOperations:
             cmds.parent(jointLoc, ctrlExtra)
             cmds.parent(ctrlExtra, locTrs)
 
-            posi = cmds.createNode("pointOnSurfaceInfo")
-            fbfm = cmds.createNode("fourByFourMatrix")
             dm = cmds.createNode("decomposeMatrix")
+            cmds.setAttr(f"{dm}.isHistoricallyInteresting", 0)
             cfsi = cmds.createNode("curveFromSurfaceIso")
+            cmds.setAttr(f"{cfsi}.isHistoricallyInteresting", 0)
             ci = cmds.createNode("curveInfo")
+            cmds.setAttr(f"{ci}.isHistoricallyInteresting", 0)
 
-            if 0 < v < 1:
-                index = i - 1 if pType == KnotType.main else i
-                cmds.connectAttr(f"{pKnotNode}.parameter[{index}]", f"{posi}.parameterU")
-                cmds.connectAttr(f"{pKnotNode}.parameter[{index}]", f"{cfsi}.isoparmValue")
-            else:
-                cmds.setAttr(f"{posi}.parameterU", v)
-                cmds.setAttr(f"{cfsi}.isoparmValue", v)
+            if pMethod == MethodName.uvPin:
+                uvPin = cmds.createNode("uvPin")
+                cmds.setAttr(f"{uvPin}.isHistoricallyInteresting", 0)
+                if 0 < v < 1:
+                    index = i - 1 if pType == KnotType.main else i
+                    cmds.connectAttr(f"{pKnotNode}.parameter[{index}]", f"{uvPin}.coordinate[0].coordinateU")
+                    cmds.connectAttr(f"{pKnotNode}.parameter[{index}]", f"{cfsi}.isoparmValue")
+                else:
+                    cmds.setAttr(f"{uvPin}.coordinate[0].coordinateU", v)
+                    cmds.setAttr(f"{cfsi}.isoparmValue", v)
 
-            # cmds.connectAttr(f"{self.mainKnotNode}.Parameter[{i}]", f"{posi}.parameterV")
-            cmds.connectAttr(f"{cls.ribbon}.worldSpace[0]", f"{posi}.inputSurface")
-            cmds.connectAttr(f"{posi}.positionX", f"{fbfm}.in30")
-            cmds.connectAttr(f"{posi}.positionY", f"{fbfm}.in31")
-            cmds.connectAttr(f"{posi}.positionZ", f"{fbfm}.in32")
-            cmds.connectAttr(f"{posi}.normalizedNormalX", f"{fbfm}.in20")
-            cmds.connectAttr(f"{posi}.normalizedNormalY", f"{fbfm}.in21")
-            cmds.connectAttr(f"{posi}.normalizedNormalZ", f"{fbfm}.in22")
-            cmds.connectAttr(f"{posi}.normalizedTangentUX", f"{fbfm}.in00")
-            cmds.connectAttr(f"{posi}.normalizedTangentUY", f"{fbfm}.in01")
-            cmds.connectAttr(f"{posi}.normalizedTangentUZ", f"{fbfm}.in02")
-            cmds.connectAttr(f"{posi}.normalizedTangentVX", f"{fbfm}.in10")
-            cmds.connectAttr(f"{posi}.normalizedTangentVY", f"{fbfm}.in11")
-            cmds.connectAttr(f"{posi}.normalizedTangentVZ", f"{fbfm}.in12")
+                cmds.connectAttr(f"{cls.ribbon}.worldSpace[0]", f"{uvPin}.deformedGeometry")
+                cmds.connectAttr(f"{uvPin}.outputMatrix[0]", f"{dm}.inputMatrix")
+                cmds.setAttr(f"{uvPin}.normalAxis", 2)  # Z axis
+                cmds.setAttr(f"{uvPin}.tangentAxis", 0)  # X axis
+                cmds.setAttr(f"{uvPin}.coordinate[0].coordinateV", 0.5)
 
-            cmds.connectAttr(f"{fbfm}.output", f"{dm}.inputMatrix")
+            elif pMethod == MethodName.posi:
+                posi = cmds.createNode("pointOnSurfaceInfo")
+                cmds.setAttr(f"{posi}.isHistoricallyInteresting", 0)
+                fbfm = cmds.createNode("fourByFourMatrix")
+                cmds.setAttr(f"{fbfm}.isHistoricallyInteresting", 0)
+                if 0 < v < 1:
+                    index = i - 1 if pType == KnotType.main else i
+                    cmds.connectAttr(f"{pKnotNode}.parameter[{index}]", f"{posi}.parameterU")
+                    cmds.connectAttr(f"{pKnotNode}.parameter[{index}]", f"{cfsi}.isoparmValue")
+                else:
+                    cmds.setAttr(f"{posi}.parameterU", v)
+                    cmds.setAttr(f"{cfsi}.isoparmValue", v)
+                cmds.connectAttr(f"{cls.ribbon}.worldSpace[0]", f"{posi}.inputSurface")
+                cmds.connectAttr(f"{posi}.positionX", f"{fbfm}.in30")
+                cmds.connectAttr(f"{posi}.positionY", f"{fbfm}.in31")
+                cmds.connectAttr(f"{posi}.positionZ", f"{fbfm}.in32")
+                cmds.connectAttr(f"{posi}.normalizedNormalX", f"{fbfm}.in20")
+                cmds.connectAttr(f"{posi}.normalizedNormalY", f"{fbfm}.in21")
+                cmds.connectAttr(f"{posi}.normalizedNormalZ", f"{fbfm}.in22")
+                cmds.connectAttr(f"{posi}.normalizedTangentUX", f"{fbfm}.in00")
+                cmds.connectAttr(f"{posi}.normalizedTangentUY", f"{fbfm}.in01")
+                cmds.connectAttr(f"{posi}.normalizedTangentUZ", f"{fbfm}.in02")
+                cmds.connectAttr(f"{posi}.normalizedTangentVX", f"{fbfm}.in10")
+                cmds.connectAttr(f"{posi}.normalizedTangentVY", f"{fbfm}.in11")
+                cmds.connectAttr(f"{posi}.normalizedTangentVZ", f"{fbfm}.in12")
+                cmds.setAttr(f"{posi}.parameterV", 0.5)
+                cmds.connectAttr(f"{fbfm}.output", f"{dm}.inputMatrix")
+
             cmds.connectAttr(f"{dm}.outputRotate", f"{locTrs}.rotate")
             cmds.connectAttr(f"{dm}.outputTranslate", f"{locTrs}.translate")
 
@@ -456,10 +486,12 @@ class RibbonOperations:
             cmds.connectAttr(f"{cfsi}.outputCurve", f"{ci}.inputCurve")
 
             md1 = cmds.createNode("multiplyDivide")
+            cmds.setAttr(f"{md1}.isHistoricallyInteresting", 0)
             cmds.connectAttr(f"{ci}.arcLength", f"{md1}.input1X")
             cmds.connectAttr(f"{cls.makeNurbNode}.width", f"{md1}.input2X")
             cmds.setAttr(f"{md1}.operation", 2)
             md2 = cmds.createNode("multiplyDivide")
+            cmds.setAttr(f"{md2}.isHistoricallyInteresting", 0)
             cmds.connectAttr(f"{md1}.outputX", f"{md2}.input1X")
             cmds.setAttr(f"{md2}.input2X", 10)
             cmds.connectAttr(f"{md2}.outputX", f"{locTrs}.scaleX")
@@ -467,7 +499,6 @@ class RibbonOperations:
             cmds.connectAttr(f"{md2}.outputX", f"{locTrs}.scaleZ")
 
             cmds.setAttr(f"{cfsi}.isoparmDirection", 1)
-            cmds.setAttr(f"{posi}.parameterV", 0.5)
             cmds.setAttr(f"{locShape}.visibility", False)
 
             # setup message connection from knot to locators
@@ -558,7 +589,7 @@ class RibbonOperations:
                         0]  # We extract tX to determine if control vertex are before or after the position of the joint
                     jnt, jntPos = jntDataPos[jointIndex]
                     nextJnt, nextJntPos = jntDataPos[jointIndex + 1]
-                    if xPosU < nextJntPos:
+                    if xPosU + 0.001 < nextJntPos:
                         jntToSkin = jnt
                     else:
                         jntToSkin = nextJnt
@@ -581,11 +612,11 @@ class RibbonOperations:
 
     @classmethod
     def update_main_iso(cls, pMainJointCount: int, pRollJointCount: int,
-                        pCreateControlJoints: bool, pCreateChain: bool, pSkinChain: bool, pPinch: bool) -> None:
+                        pCreateControlJoints: bool, pCreateChain: bool, pSkinChain: bool) -> None:
 
         cls.distances = cls.generate_distance_list(cls.selection, cls.length, pMainJointCount)
         cls.mainIsoPos = cls.generate_iso_pos_main(cls.distances)
-        cls.mainKnotNode = cls.add_knots(cls.ribbon, cls.mainIsoPos, KnotType.main, pPinch)
+        cls.mainKnotNode = cls.add_knots(cls.ribbon, cls.mainIsoPos, KnotType.main, pCreateChain)
         cls.update_follicles(cls.mainIsoPos, cls.mainKnotNode, KnotType.main)
         cls.update_roll_iso(pRollJointCount, pCreateChain, pCreateControlJoints, pSkinChain)
 
@@ -654,6 +685,10 @@ class RibbonOperations:
             cmds.select(clear=True)
 
     @classmethod
+    def delete_history(cls) -> None:
+        cmds.bakePartialHistory(cls.ribbon, prePostDeformers=True)
+
+    @classmethod
     def delete_ribbon(cls, pRibbonName: str) -> None:
         cmds.delete(cls.grpRibbon)
         cmds.delete(f"{pRibbonName}")
@@ -668,9 +703,8 @@ class RibbonOperations:
                       pMainJointCount: int,
                       pRollJointCount: int,
                       pCreateControlJoints: bool,
-                      pCreateChain: bool,
                       pSkinChain: bool,
-                      pPinch: bool,
+                      pCreateChain: bool,
                       pShowPopup: bool = True) -> str:
         cls.init_params()
         cls.selection = cls.get_selection("joint", True)
@@ -683,22 +717,21 @@ class RibbonOperations:
         cls.grpLoc = cmds.group(name=f"{cls.ribbon}_grp_loc", empty=True, parent=cls.grpRibbon)
         cls.grpJnt = cmds.group(name=f"{cls.ribbon}_grp_jnt", empty=True, parent=cls.grpRibbon)
         cls.update_main_iso(pMainJointCount, pRollJointCount, pCreateControlJoints,
-                            pCreateChain, pSkinChain, pPinch)
+                            pCreateChain, pSkinChain)
         message = cls.end_step(pShowPopup, True)
         return message
 
     @classmethod
     def build_ribbon(cls, *args, **kwargs) -> str:
         if cls.previs_step is False:
-            cls.previs_ribbon(*args, pPinch=kwargs["pPinch"], pShowPopup=False)
+            cls.previs_ribbon(*args, pShowPopup=False)
 
         # build deformers
         for param, value in kwargs.items():
             if param.lower() in ["sine", "twist", "flare", "bend"] and value:
-                cls.create_deformer(cls.mainIsoPos, cls.rollIsoPos, param, kwargs["pPinch"])
+                cls.create_deformer(cls.mainIsoPos, cls.rollIsoPos, param, kwargs["pCreateChain"])
 
         message = cls.end_step(True, False)
-        cls.init_params()  # that will help to create a new ribbon right after building one.
         return message
 
     @classmethod
