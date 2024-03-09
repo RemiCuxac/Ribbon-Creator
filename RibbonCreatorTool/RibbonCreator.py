@@ -252,8 +252,8 @@ class RibbonInterface(QtWidgets.QMainWindow):
         return self.ui.qcb_skin.isChecked()
 
     @property
-    def pinch(self) -> bool:
-        return self.ui.qcb_pinch.isChecked()
+    def history(self) -> bool:
+        return self.ui.qcb_clean_history.isChecked()
 
     def check_ribbon_name(self) -> None:
         if self.rop.check_ribbon(self.ribbon_name) and not self.rop.previs_step:
@@ -394,12 +394,10 @@ class RibbonInterface(QtWidgets.QMainWindow):
         self.ui.qcb_chain.toggled.connect(self.update_layout_chain)
 
         self.ui.qcb_control_joints.toggled.connect(self.update_layout_control_joints)
-        self.ui.qcb_pinch.toggled.connect(self.update_main_iso)
         self.ui.qcb_skin.toggled.connect(self.update_skin)
 
     def connect_tooltips(self) -> None:
         self.ui.qcb_align.setStatusTip("Select the chain from first joint to last joint, then check this button.")
-        self.ui.qcb_pinch.setStatusTip("This will snap isoparms of the ribbon to main joints.")
         self.ui.qcb_skin.setStatusTip("This will skin control joints to the ribbon")
         self.ui.qcb_chain.setStatusTip("This will make a leaf setup, so roll joints will be parented to main joints")
         self.ui.qcb_control_joints.setStatusTip("This will create control joints.")
@@ -428,7 +426,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
         if not self.rop.previs_step:
             message = self.rop.previs_ribbon(self.ribbon_name, self.forward_vector, self.up_vector, self.length,
                                              self.main_joint_count, self.roll_joint_count, self.control_joints,
-                                             self.create_chain, self.skin, self.pinch)
+                                             self.skin, pCreateChain=self.create_chain)
             self.show_popup(message)
         else:
             self.rop.delete_ribbon(self.ribbon_name)
@@ -438,12 +436,15 @@ class RibbonInterface(QtWidgets.QMainWindow):
         ribbonName = self.ribbon_name
         message = self.rop.build_ribbon(ribbonName, self.forward_vector, self.up_vector, self.length,
                                         self.main_joint_count, self.roll_joint_count, self.control_joints,
-                                        self.create_chain, self.skin, pPinch=self.pinch, bend=self.create_bend,
+                                        self.skin, pCreateChain=self.create_chain, bend=self.create_bend,
                                         sine=self.create_sine, twist=self.create_twist, flare=self.create_flare)
+        if self.history:
+            self.rop.delete_history()
         self.send_message("Done !")
         self.ui.qle_name.setText(self.rop.generate_new_name(ribbonName))
         self.show_popup(message)
         self.switch_previs(self.rop.previs_step)
+        self.rop.init_params()  # that will help to create a new ribbon right after building one.
 
     def update_length(self) -> None:
         if self.rop.previs_step and self.rop.check_ribbon():
@@ -453,7 +454,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
     def update_main_iso(self) -> None:
         if self.rop.previs_step and self.rop.check_ribbon():
             self.rop.update_main_iso(self.main_joint_count, self.roll_joint_count,
-                                     self.control_joints, self.create_chain, self.skin, self.pinch)
+                                     self.control_joints, self.create_chain, self.skin)
 
     def update_roll_iso(self) -> None:
         if self.rop.previs_step and self.rop.check_ribbon():
@@ -487,6 +488,9 @@ def show_ui():
 if __name__ == '__main__':
     show_ui()
 
+# TODO: add DEBUG tab that will expose parameters like amplitude of sine, offset, and other deformers.
+#  If there are control joints, add a slider to bend each main joints.
+
 # Naming rules updates :
 # TODO: I should add a namespace like "Ribbon:" and when clicking "build", "Ribbon:" becomes "Ribbon_".
 #  So the nurb is named like "Ribbon:Nurb" and will be named as "Ribbon_Nurb" in the end.
@@ -517,6 +521,11 @@ if __name__ == '__main__':
 #  But it should check if the selected control joints can be moved to center of world for skinning step, and moved back
 # TODO: add a tab where I would be able to manage things like connect deformers to a network node,
 #  match ribbon to selected, rename ribbon etc.
+
+# TODO: add a feature to use an existing ribbon. It will reactivate the switch instead of rebuild all the ribbon
+#  It will also update length, main joints and roll joints interface from the selected ribbon.
+#  It could be dependant of a checkbox or from two QLineEdit where I store the selected ribbon and the selected setup
+
 
 # TODO: add a feature to use an existing ribbon. It will reactivate the switch instead of rebuild all the ribbon
 #  It will also update lenght, main joints and roll joints interface from the selected ribbon.
