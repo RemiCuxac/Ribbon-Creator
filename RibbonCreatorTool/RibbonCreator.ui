@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>365</width>
-    <height>627</height>
+    <height>610</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -453,19 +453,6 @@
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="qcb_pinch">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>Add Pinch</string>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QCheckBox" name="qcb_control_joints">
              <property name="text">
               <string>Create Control Joints</string>
@@ -629,6 +616,16 @@
             </widget>
            </item>
           </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="qcb_clean_history">
+          <property name="text">
+           <string>Clean Ribbon History</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item>
