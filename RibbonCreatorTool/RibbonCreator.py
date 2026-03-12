@@ -2,10 +2,14 @@ import os
 from importlib import reload
 from typing import List, Optional
 
-from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.QtUiTools import QUiLoader
-from shiboken2 import wrapInstance
-
+try:
+    from PySide2 import QtCore, QtWidgets, QtGui
+    from PySide2.QtUiTools import QUiLoader
+    from shiboken2 import wrapInstance
+except ModuleNotFoundError:
+    from PySide6 import QtCore, QtWidgets, QtGui
+    from PySide6.QtUiTools import QUiLoader
+    from shiboken6 import wrapInstance
 from maya import OpenMayaUI
 
 # In case that the script is executed through mayaPy or Script Editor:
