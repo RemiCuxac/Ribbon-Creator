@@ -1,6 +1,5 @@
 import os
-from importlib import reload
-from typing import List, Optional
+from typing import List
 
 try:
     from PySide2 import QtCore, QtWidgets, QtGui
@@ -10,41 +9,17 @@ except ModuleNotFoundError:
     from PySide6 import QtCore, QtWidgets, QtGui
     from PySide6.QtUiTools import QUiLoader
     from shiboken6 import wrapInstance
-from maya import OpenMayaUI
+from maya import OpenMayaUI, cmds
 
-# In case that the script is executed through mayaPy or Script Editor:
-
-filePath = __file__
-
-try:
-    import RibbonCreatorTool.RibbonCreatorOperations as RibbonGenOp
-except ModuleNotFoundError:
-    import sys
-
-    currentParent = os.path.abspath(os.path.join(os.path.dirname(filePath), os.pardir))
-    sys.path.append(currentParent)
-    import RibbonCreatorTool.RibbonCreatorOperations as RibbonGenOp
-
-reload(RibbonGenOp)
-
+import RibbonCreatorTool.RibbonCreatorOperations as RibbonGenOp
 
 def maya_main_window() -> QtWidgets.QWidget:
     main_window = OpenMayaUI.MQtUtil.mainWindow()
     return wrapInstance(int(main_window), QtWidgets.QWidget)
 
-
-def get_top_widget_by_name(pClass) -> Optional[QtWidgets.QWidget]:
-    for widget in maya_window.children():
-        if widget.__class__.__name__ == pClass.__name__:
-            return widget
-    return None
-
-
-maya_window = maya_main_window()
-
+filePath = __file__
 uiPath = os.path.join(os.path.dirname(filePath), "RibbonCreator.ui")
 ToolName = "Ribbon Creator Tool"
-
 
 class RibbonInterface(QtWidgets.QMainWindow):
     _instance = None
@@ -55,8 +30,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
         return cls._instance
 
     def __init__(self, parent=None):
-        super(RibbonInterface, self).__init__(parent)
-        self.setParent(maya_window)
+        super().__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setWindowTitle(ToolName)
@@ -486,18 +460,9 @@ class RibbonInterface(QtWidgets.QMainWindow):
 
 
 def show_ui():
-    # because the tool is parented to maya window:
-    # if cmds.window(ToolName, exists=Ture):
-    #     cmds.deleteUI(ToolName, window=True)
-    # I can also use :
-    ui = get_top_widget_by_name(RibbonInterface)
-    if ui:
-        ui.close()
-        ui.deleteLater()
-
-    RibbonInterface.delete_instance()  # clear instance before running it, in case I would like to run it more than once
-
-    ui = RibbonInterface(maya_window)
+    if cmds.window(ToolName, exists=True):
+        cmds.deleteUI(ToolName, window=True)
+    ui = RibbonInterface(maya_main_window())
     ui.show()
 
 
