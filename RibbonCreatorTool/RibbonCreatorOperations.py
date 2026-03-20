@@ -510,50 +510,52 @@ class RibbonOperations:
 
     @classmethod
     def update_control_joint(cls, pCreateControlJoints: bool, pIsChain: bool, pSkinChain: bool):
-        if cls.previs_step:
-            grpName = f"{cls.ribbon}_grp_control"
-            if cmds.ls(grpName):
-                cmds.delete(grpName)
-            if pCreateControlJoints:
-                jntGrp = cmds.group(name=grpName, empty=True)
-                cmds.parent(jntGrp, cls.grpJnt)
+        if not cls.previs_step:
+            return None
+        grpName = f"{cls.ribbon}_grp_control"
+        if cmds.ls(grpName):
+            cmds.delete(grpName)
+        if pCreateControlJoints:
+            jntGrp = cmds.group(name=grpName, empty=True)
+            cmds.parent(jntGrp, cls.grpJnt)
 
-                cls.controlJointsMain.clear()
-                cls.controlJointsAll.clear()
+            cls.controlJointsMain.clear()
+            cls.controlJointsAll.clear()
 
-                locators = cls.get_sorted_loc()
-                indexMain = 0
-                indexRoll = 0
-                prevMain = jntGrp
-                for i, loc in enumerate(locators):
-                    if "main" in loc and i != 0:
-                        indexMain += 1
-                        indexRoll = 0
-                    translate = cmds.xform(loc, query=True, translation=True, worldSpace=True)
-                    if i == 0:
-                        rotate = cls.orient
-                    else:
-                        rotate = cmds.xform(loc, query=True, rotation=True, worldSpace=True)
-                    jnt = cmds.joint(name=f"jnt_ctrl_{cls.ribbon}_{indexMain:02d}_{indexRoll:02d}", orientation=rotate,
-                                     position=translate, radius=cls.jntRadius + 0.5)
-                    cmds.setAttr(f"{jnt}.overrideEnabled", True)
-                    cmds.setAttr(f"{jnt}.overrideColor", 17)  # YELLOW
-                    if prevMain not in cmds.listRelatives(jnt, parent=True):
-                        cmds.parent(jnt, prevMain)
-                    if "main" in loc:
-                        if pIsChain:
-                            prevMain = jnt
-                        cls.controlJointsMain.append(jnt)
-                    cls.controlJointsAll.append(jnt)
-                    indexRoll += 1
-                    if not pIsChain:
-                        if cmds.listRelatives(jnt, parent=True) != [jntGrp]:
-                            cmds.parent(jnt, jntGrp)
-                if pSkinChain:
-                    cls.update_skin()
+            locators = cls.get_sorted_loc()
+            indexMain = 0
+            indexRoll = 0
+            prevMain = jntGrp
+            for i, loc in enumerate(locators):
+                if "main" in loc and i != 0:
+                    indexMain += 1
+                    indexRoll = 0
+                translate = cmds.xform(loc, query=True, translation=True, worldSpace=True)
+                if i == 0:
+                    rotate = cls.orient
                 else:
-                    cls.unbind_skin(cls.ribbon)
-                return cls.controlJointsMain
+                    rotate = cmds.xform(loc, query=True, rotation=True, worldSpace=True)
+                jnt = cmds.joint(name=f"jnt_ctrl_{cls.ribbon}_{indexMain:02d}_{indexRoll:02d}", orientation=rotate,
+                                 position=translate, radius=cls.jntRadius + 0.5)
+                cmds.setAttr(f"{jnt}.overrideEnabled", True)
+                cmds.setAttr(f"{jnt}.overrideColor", 17)  # YELLOW
+                if prevMain not in cmds.listRelatives(jnt, parent=True):
+                    cmds.parent(jnt, prevMain)
+                if "main" in loc:
+                    if pIsChain:
+                        prevMain = jnt
+                    cls.controlJointsMain.append(jnt)
+                cls.controlJointsAll.append(jnt)
+                indexRoll += 1
+                if not pIsChain:
+                    if cmds.listRelatives(jnt, parent=True) != [jntGrp]:
+                        cmds.parent(jnt, jntGrp)
+            if pSkinChain:
+                cls.update_skin()
+            else:
+                cls.unbind_skin(cls.ribbon)
+            return cls.controlJointsMain
+        return None
 
     @classmethod
     def update_skin(cls) -> Union[str, None]:
@@ -724,7 +726,7 @@ class RibbonOperations:
 
     @classmethod
     def build_ribbon(cls, *args, **kwargs) -> str:
-        if cls.previs_step is False:
+        if not cls.previs_step:
             cls.previs_ribbon(*args, pPinch=kwargs["pPinch"], pShowPopup=False)
 
         # build deformers
@@ -738,9 +740,10 @@ class RibbonOperations:
     @classmethod
     def end_step(cls, pShowPopup: bool, pPreBuildStep: bool = "") -> Optional[str]:
         cls.restore_selection()
-        if pShowPopup:
-            if pPreBuildStep:
-                message = "You can now adjust parameters and click 'Build' when it looks good."
-            else:
-                message = "\N{Party Popper} Enjoy ! \N{Party Popper}"
-            return message
+        if not pShowPopup:
+            return None
+        if pPreBuildStep:
+            message = "You can now adjust parameters and click 'Build' when it looks good."
+        else:
+            message = "\N{Party Popper} Enjoy ! \N{Party Popper}"
+        return message
