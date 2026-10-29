@@ -4,10 +4,12 @@ from typing import List
 try:
     from PySide2 import QtCore, QtWidgets, QtGui
     from PySide2.QtUiTools import QUiLoader
+    from PySide2.QtWidgets import QAction
     from shiboken2 import wrapInstance
 except ModuleNotFoundError:
     from PySide6 import QtCore, QtWidgets, QtGui
     from PySide6.QtUiTools import QUiLoader
+    from PySide6.QtGui import QAction
     from shiboken6 import wrapInstance
 from maya import OpenMayaUI, cmds
 
@@ -40,7 +42,7 @@ class RibbonInterface(QtWidgets.QMainWindow):
         # setup menu
         menubar = self.menuBar()
         menu = QtWidgets.QMenu('&Help', self)  # title and parent
-        qa_about = QtWidgets.QAction("About", self)  # title and parent
+        qa_about = QAction("About", self)  # title and parent
         qa_about.triggered.connect(self.help)
         menu.addAction(qa_about)
         menubar.addMenu(menu)
